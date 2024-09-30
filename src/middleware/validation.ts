@@ -15,3 +15,15 @@ export const validateRegistration = [
     next();
   },
 ];
+
+export const validateLogin = [
+  body("email").isEmail().withMessage("Invalid email address"),
+  body("password").notEmpty().withMessage("Password is required"),
+  (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  },
+];

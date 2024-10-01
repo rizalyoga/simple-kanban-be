@@ -1,12 +1,26 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { verifyToken } from "../utils/jwtUtils";
 
 const prisma = new PrismaClient();
 
 export const getAllTodos = async (req: Request, res: Response) => {
   try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res
+        .status(401)
+        .json({ status_code: 401, message: "Authorization header missing" });
+    }
+    const token = authHeader.split(" ")[1];
+    const user = verifyToken(token);
+
     const todos = await prisma.groupTodo.findMany({
+      where: {
+        createdBy: user.id,
+      },
       select: {
         id: true,
         title: true,

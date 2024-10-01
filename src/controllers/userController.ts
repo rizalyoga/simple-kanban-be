@@ -7,18 +7,21 @@ const prisma = new PrismaClient();
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, passwordConfirmation } = req.body;
+    const { name, email, password, password_confirmation } = req.body;
 
-    if (password !== passwordConfirmation) {
-      return res
-        .status(400)
-        .json({ message: "Passwords and confirmation passwords do not match" });
+    if (password !== password_confirmation) {
+      return res.status(400).json({
+        status_code: 400,
+        message: "Passwords and confirmation passwords do not match",
+      });
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ status_code: 400, message: "User already exists" });
     }
 
     // Hash password
@@ -36,11 +39,13 @@ export const registerUser = async (req: Request, res: Response) => {
     res.status(201).json({
       statusCode: 201,
       message: "User registered successfully",
-      data: { userId: newUser.id, name: newUser.name, email: newUser.email },
+      data: { user_id: newUser.id, name: newUser.name, email: newUser.email },
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ message: "Error registering user" });
+    res
+      .status(500)
+      .json({ status_code: 500, message: "Error registering user" });
   }
 };
 
@@ -51,13 +56,17 @@ export const loginUser = async (req: Request, res: Response) => {
     // Find user by email
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ status_code: 401, message: "Invalid credentials" });
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ status_code: 401, message: "Invalid credentials" });
     }
 
     // Generate JWT
@@ -67,11 +76,14 @@ export const loginUser = async (req: Request, res: Response) => {
       statusCode: 200,
       message: "Login successful",
       data: {
+        user_id: user.id,
+        name: user.name,
+        email: user.email,
         jwt: token,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Error logging in" });
+    res.status(500).json({ status_code: 500, message: "Error logging in" });
   }
 };

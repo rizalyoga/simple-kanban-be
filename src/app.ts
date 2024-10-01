@@ -5,6 +5,7 @@ import helmet from "helmet";
 import "dotenv/config";
 
 import userRoutes from "./routes/userRoutes";
+import todoRoutes from "./routes/todoRoutes";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/api/users", userRoutes);
+app.use("/api/todos", todoRoutes);
 
 // Handle 404
 app.use((req, res) => {

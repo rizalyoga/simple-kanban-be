@@ -23,9 +23,13 @@ export const authenticateJWT = (
       req.user = user as { id: number; email: string };
       next();
     } catch (error) {
-      return res.status(403).json({ message: "Invalid token" });
+      return res
+        .status(403)
+        .json({ status_code: 403, message: "Invalid token" });
     }
   } else {
-    res.status(401).json({ message: "Authorization header missing" });
+    res
+      .status(401)
+      .json({ status_code: 401, message: "Authorization header missing" });
   }
 };

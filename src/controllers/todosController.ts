@@ -44,10 +44,46 @@ export const getAllTodos = async (req: Request, res: Response) => {
       updated_at: todo.updatedAt.toISOString(),
     }));
 
-    res.json(formattedTodos);
+    res.status(200).json({
+      status_code: 200,
+      message: "Todos fetched successfully",
+      data: formattedTodos,
+    });
   } catch (error) {
     console.error("Error fetching todos:", error);
     res.status(500).json({ status_code: 500, message: "Error fetching todos" });
+  }
+};
+
+export const getTodoById = async (req: Request, res: Response) => {
+  try {
+    const { group_id } = req.params;
+
+    const todo = await prisma.groupTodo.findUnique({
+      where: {
+        id: parseInt(group_id),
+      },
+      select: {
+        id: true,
+        title: true,
+        createdBy: true,
+      },
+    });
+
+    if (!todo) {
+      return res
+        .status(404)
+        .json({ status_code: 404, message: "Todo not found" });
+    }
+
+    res.status(200).json({
+      status_code: 200,
+      message: "Todo fetched successfully",
+      data: todo,
+    });
+  } catch (error) {
+    console.error("Error fetching todo:", error);
+    res.status(500).json({ status_code: 500, message: "Error fetching todo" });
   }
 };
 
@@ -71,120 +107,12 @@ export const createTodoGroup = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json({
-      id: newTodoGroup.id,
-      title: newTodoGroup.title,
-      description: newTodoGroup.description,
-    });
-  } catch (error) {
-    console.error("Error creating todo group:", error);
-    res
-      .status(500)
-      .json({ status_code: 500, message: "Error creating todo group" });
-  }
-};
-
-export const getTasksByGroupId = async (req: Request, res: Response) => {
-  try {
-    const { todos_group_id } = req.params;
-
-    const tasks = await prisma.taskItem.findMany({
-      where: {
-        groupTodoId: parseInt(todos_group_id),
-      },
-      select: {
-        id: true,
-        name: true,
-        done: true,
-        groupTodoId: true,
-        createdAt: true,
-        updatedAt: true,
-        progressPercentage: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-
-    // Format the response to match the desired output
-    const formattedTasks = tasks.map((task) => ({
-      id: task.id,
-      name: task.name,
-      done: task.done,
-      group_todo_id: task.groupTodoId,
-      created_at: task.createdAt.toISOString(),
-      updated_at: task.updatedAt.toISOString(),
-      progress_percentage: task.progressPercentage,
-    }));
-
-    res.status(200).json({
-      status_code: 200,
-      message: "Success",
-      data: formattedTasks,
-    });
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    res.status(500).json({ message: "Error fetching tasks" });
-  }
-};
-
-export const createNewTasksByGroupId = async (
-  req: AuthRequest,
-  res: Response
-) => {
-  try {
-    const { name, progress_percentage } = req.body;
-    const { todos_group_id } = req.params;
-
-    if (!todos_group_id) {
-      return res
-        .status(401)
-        .json({ status_code: 401, message: "User not authenticated" });
-    }
-
-    const taskGroup = prisma.groupTodo.findUnique({
-      where: {
-        id: parseInt(todos_group_id),
-      },
-    });
-
-    if (!taskGroup) {
-      return res
-        .status(404)
-        .json({ status_code: 404, message: "Task group not found" });
-    }
-
-    const newTask = await prisma.taskItem.create({
-      data: {
-        name,
-        progressPercentage: progress_percentage,
-        groupTodo: {
-          connect: {
-            id: parseInt(todos_group_id),
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        done: true,
-        groupTodoId: true,
-        createdAt: true,
-        updatedAt: true,
-        progressPercentage: true,
-      },
-    });
-
-    res.status(201).json({
       status_code: 201,
-      message: "Task created successfully",
+      message: "Todo group created successfully",
       data: {
-        id: newTask.id,
-        name: newTask.name,
-        done: newTask.done,
-        group_todo_id: newTask.groupTodoId,
-        created_at: newTask.createdAt.toISOString(),
-        updated_at: newTask.createdAt.toISOString(),
-        progress_percentage: newTask.progressPercentage,
+        id: newTodoGroup.id,
+        title: newTodoGroup.title,
+        description: newTodoGroup.description,
       },
     });
   } catch (error) {
@@ -195,86 +123,68 @@ export const createNewTasksByGroupId = async (
   }
 };
 
-export const updateTaskItem = async (req: AuthRequest, res: Response) => {
+export const updateTodoGroup = async (req: AuthRequest, res: Response) => {
   try {
-    const { todos_group_id, task_id } = req.params;
-    const { target_todo_id, name, progress_percentage } = req.body;
+    const { title, description } = req.body;
+    const { group_id } = req.params;
 
-    if (!todos_group_id || !task_id) {
+    if (!group_id) {
       return res
         .status(401)
-        .json({ status_code: 401, message: "User not authenticated" });
+        .json({ status_code: 401, message: "Group todo not found" });
     }
 
-    const updateTaskItem = await prisma.taskItem.update({
+    const updateTodoGroup = await prisma.groupTodo.update({
       where: {
-        id: parseInt(task_id),
+        id: parseInt(group_id),
       },
       data: {
-        name,
-        progressPercentage: progress_percentage,
-        groupTodo: {
-          connect: {
-            id: parseInt(target_todo_id),
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        done: true,
-        groupTodoId: true,
-        createdAt: true,
-        updatedAt: true,
-        progressPercentage: true,
+        title,
+        description,
       },
     });
 
     res.status(200).json({
       status_code: 200,
-      message: "Task updated successfully",
+      message: "Todo group updated successfully",
       data: {
-        todo_id: updateTaskItem.groupTodoId,
-        id: updateTaskItem.id,
-        name: updateTaskItem.name,
-        done: updateTaskItem.done,
-        created_at: updateTaskItem.createdAt.toISOString(),
-        updated_at: updateTaskItem.updatedAt.toISOString(),
-        progress_percentage: updateTaskItem.progressPercentage,
+        id: updateTodoGroup.id,
+        title: updateTodoGroup.title,
+        description: updateTodoGroup.description,
       },
     });
   } catch (error) {
-    console.error("Error creating todo group:", error);
+    console.error("Error update todo group:", error);
     res
       .status(500)
-      .json({ status_code: 500, message: "Error creating todo group" });
+      .json({ status_code: 500, message: "Error update todo group" });
   }
 };
 
-export const deleteTaskItem = async (req: AuthRequest, res: Response) => {
+export const deleteTodoGroup = async (req: AuthRequest, res: Response) => {
   try {
-    const { todos_group_id, task_id } = req.params;
+    const { group_id } = req.params;
 
-    if (!todos_group_id || !task_id) {
+    if (!group_id) {
       return res
         .status(401)
-        .json({ status_code: 401, message: "User not authenticated" });
+        .json({ status_code: 401, message: "Group todo not found" });
     }
 
-    await prisma.taskItem.delete({
+    await prisma.groupTodo.delete({
       where: {
-        id: parseInt(task_id),
+        id: parseInt(group_id),
       },
     });
 
     res.status(200).json({
       status_code: 200,
-      message: "Task deleted successfully",
+      message: "Todo group deleted successfully",
     });
   } catch (error) {
-    console.error("Error creating todo group:", error);
+    console.error("Error delete todo group:", error);
     res
       .status(500)
-      .json({ status_code: 500, message: "Error creating todo group" });
+      .json({ status_code: 500, message: "Error delete todo group" });
   }
 };

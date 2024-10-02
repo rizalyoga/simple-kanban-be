@@ -1,19 +1,32 @@
 import express from "express";
 import {
   getAllTodos,
+  getTodoById,
   createTodoGroup,
-  getTasksByGroupId,
+  updateTodoGroup,
+  deleteTodoGroup,
+} from "../controllers/todosController";
+import {
   createNewTasksByGroupId,
+  getTasksByGroupId,
   updateTaskItem,
   deleteTaskItem,
-} from "../controllers/todosController";
+} from "../controllers/taskController";
 import { authenticateJWT } from "../middleware/authMiddleware";
 import { validateCreateTodoGroup } from "../middleware/validation";
 
 const router = express.Router();
 
 router.get("/", authenticateJWT, getAllTodos);
+router.get("/:group_id", authenticateJWT, getTodoById);
 router.post("/", authenticateJWT, validateCreateTodoGroup, createTodoGroup);
+router.patch(
+  "/:group_id",
+  authenticateJWT,
+  validateCreateTodoGroup,
+  updateTodoGroup
+);
+router.delete("/:group_id", authenticateJWT, deleteTodoGroup);
 
 // Tasks by group
 router.get("/:todos_group_id/items", authenticateJWT, getTasksByGroupId);

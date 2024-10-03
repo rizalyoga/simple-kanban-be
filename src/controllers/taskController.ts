@@ -107,7 +107,7 @@ export const getTasksByGroupId = async (req: Request, res: Response) => {
 
     res.status(200).json({
       status_code: 200,
-      message: "Success",
+      message: "Task items fetched successfully",
       data: formattedTasks,
     });
   } catch (error) {

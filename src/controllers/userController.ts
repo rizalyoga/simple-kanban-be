@@ -37,7 +37,7 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
-      statusCode: 201,
+      status_code: 201,
       message: "User registered successfully",
       data: { user_id: newUser.id, name: newUser.name, email: newUser.email },
     });
@@ -73,7 +73,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const token = generateToken(user);
 
     res.status(200).json({
-      statusCode: 200,
+      status_code: 200,
       message: "Login successful",
       data: {
         user_id: user.id,

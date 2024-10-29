@@ -188,10 +188,7 @@ export const deleteTaskItem = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.status(200).json({
-      status_code: 200,
-      message: "Task deleted successfully",
-    });
+    res.status(200).json();
   } catch (error) {
     console.error("Error creating todo group:", error);
     res

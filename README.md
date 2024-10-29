@@ -2,6 +2,8 @@
 
 This project is a RESTful API for a Kanban board application, built with Express.js, Prisma and TypeScript. It provides endpoints for user authentication, managing todo groups, and handling individual tasks within those groups.
 
+<img src="./src/ERD_Diagram_Simple_kanban_BE.png" alt="diagram" />
+
 ## Features
 
 ### User Authentication
